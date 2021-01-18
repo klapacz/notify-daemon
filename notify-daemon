@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# $1 is json, $2 is key
+extract_value() {
+	echo "$1" | grep -oP "\"$2\": \K\"([^\"]*)\"" | tr -d '"'
+}
+
+tiramisu -j | while read -r json; do
+	summary="$(extract_value "$json" "summary")"
+	body="$(extract_value "$json" "body")"
+	app_name="$(extract_value "$json" "app_name")"
+
+	if [ -n "$app_name" ] && [ "$app_name" != "notify-send" ]; then
+		summary="($app_name) $summary"
+	fi
+
+	if [ -z "$body" ]; then herbe "$summary"; else herbe "$summary" " " "$body"; fi
+done
+
